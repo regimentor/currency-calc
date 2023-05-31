@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/joho/godotenv"
+	"github.com/regimentor/currency-calc/internal/api/http"
 	"github.com/regimentor/currency-calc/internal/postgresql"
 	"log"
 	"os"
@@ -21,6 +22,12 @@ func main() {
 	poll, err := postgresql.NewConnection(psqlUser, psqlPass, psqlDb)
 	if err != nil {
 		log.Fatalf("connection to database due err: %v", err)
+	}
+
+	httpServer := http.NewServer()
+	err = httpServer.Listen()
+	if err != nil {
+		log.Fatalf("create http server due err: %v", err)
 	}
 
 	log.Println(poll)
