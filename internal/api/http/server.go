@@ -3,19 +3,20 @@ package http
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"github.com/regimentor/currency-calc/internal"
 	"net/http"
 )
 
+type UserRepository interface {
+	Create(u *internal.User) (*internal.User, error)
+}
+
 type Server struct {
+	userRepository UserRepository
 }
 
-func NewServer() *Server {
-	return &Server{}
-}
-
-func CreateToken(c echo.Context) error {
-
-	return c.String(http.StatusOK, "/create-token")
+func NewServer(userRepository UserRepository) *Server {
+	return &Server{userRepository: userRepository}
 }
 
 func GetCurrencies(c echo.Context) error {
@@ -35,10 +36,11 @@ func Authentication(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (s Server) Listen() error {
+func (s *Server) Listen() error {
 	server := echo.New()
 
-	server.POST("/create-token", CreateToken)
+	userHandler := UserHandler{repository: s.userRepository}
+	server.POST("/user", userHandler.CreateUser)
 
 	authorised := server.Group("/api", Authentication)
 	authorised.GET("/currencies", GetCurrencies)
