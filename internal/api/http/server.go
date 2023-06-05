@@ -8,7 +8,7 @@ import (
 )
 
 type UserRepository interface {
-	Create(u *internal.User) (*internal.User, error)
+	Create(u internal.CreateUserDto) (*internal.User, error)
 }
 
 type Server struct {

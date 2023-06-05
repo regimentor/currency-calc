@@ -1,14 +1,21 @@
 package internal
 
+type UserId uint
+type ApiKey string
+
 type User struct {
-	ID     uint
-	ApiKey string
+	ID     UserId
+	ApiKey ApiKey
+}
+
+type CreateUserDto struct {
 }
 
 type UserStorage interface {
-	GetById(id uint) (User, error)
-	GetByApiKey(apiKey string) (User, error)
-	Create(u *User) (User, error)
+	GetById(id UserId) (User, error)
+	GetByApiKey(apiKey ApiKey) (User, error)
+	// TODO: CreateUserDto
+	Create(u CreateUserDto) (User, error)
 }
 
 type UserRepository struct {
@@ -19,7 +26,7 @@ func NewUserRepository(storage UserStorage) *UserRepository {
 	return &UserRepository{storage: storage}
 }
 
-func (r *UserRepository) Create(u *User) (*User, error) {
+func (r *UserRepository) Create(u CreateUserDto) (*User, error) {
 
-	return u, nil
+	return nil, nil
 }

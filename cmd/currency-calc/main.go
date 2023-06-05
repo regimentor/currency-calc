@@ -20,7 +20,7 @@ func main() {
 	psqlDb := os.Getenv("POSTGRESQL_DATABASE")
 
 	// TODO: pass a context
-	poll, err := postgresql.NewConnection(psqlUser, psqlPass, psqlDb)
+	poll, err := NewConnection(psqlUser, psqlPass, psqlDb)
 	if err != nil {
 		log.Fatalf("connection to database due err: %v", err)
 	}

@@ -13,17 +13,17 @@ func NewUserStorage(connection *pgxpool.Pool) *UserStorage {
 	return &UserStorage{connection: connection}
 }
 
-func (s *UserStorage) GetById(id uint) (internal.User, error) {
+func (s *UserStorage) GetById(id internal.UserId) (internal.User, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (s *UserStorage) GetByApiKey(apiKey string) (internal.User, error) {
+func (s *UserStorage) GetByApiKey(apiKey internal.ApiKey) (internal.User, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (s *UserStorage) Create(u *internal.User) (internal.User, error) {
+func (s *UserStorage) Create(u internal.CreateUserDto) (internal.User, error) {
 	//TODO implement me
 	panic("implement me")
 }
