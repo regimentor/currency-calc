@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/regimentor/currency-calc/internal"
-	"net/http"
 )
 
 type UserRepository interface {
@@ -19,16 +18,6 @@ func NewServer(userRepository UserRepository) *Server {
 	return &Server{userRepository: userRepository}
 }
 
-func GetCurrencies(c echo.Context) error {
-
-	return c.String(http.StatusOK, "/currencies")
-}
-
-func GetCurrenciesFromTo(c echo.Context) error {
-
-	return c.String(http.StatusOK, "/currencies/from-to")
-}
-
 func Authentication(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 
@@ -38,13 +27,14 @@ func Authentication(next echo.HandlerFunc) echo.HandlerFunc {
 
 func (s *Server) Listen() error {
 	server := echo.New()
+	authorised := server.Group("/api", Authentication)
 
 	userHandler := UserHandler{repository: s.userRepository}
 	server.POST("/user", userHandler.CreateUser)
 
-	authorised := server.Group("/api", Authentication)
-	authorised.GET("/currencies", GetCurrencies)
-	authorised.GET("/currencies/from-to", GetCurrenciesFromTo)
+	currencyHandler := CurrencyHandler{}
+	authorised.GET("/currencies", currencyHandler.GetCurrencies)
+	authorised.GET("/currencies/from-to", currencyHandler.GetCurrenciesFromTo)
 
 	err := server.Start(":8080")
 	if err != nil {

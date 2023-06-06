@@ -1,7 +1,13 @@
 package internal
 
+import "fmt"
+
 type UserId uint
 type ApiKey string
+
+func (r *ApiKey) generate() {
+	panic("TODO: implement me")
+}
 
 type User struct {
 	ID     UserId
@@ -12,10 +18,9 @@ type CreateUserDto struct {
 }
 
 type UserStorage interface {
-	GetById(id UserId) (User, error)
-	GetByApiKey(apiKey ApiKey) (User, error)
-	// TODO: CreateUserDto
-	Create(u CreateUserDto) (User, error)
+	GetById(id UserId) (*User, error)
+	GetByApiKey(apiKey ApiKey) (*User, error)
+	Create(u CreateUserDto) (*User, error)
 }
 
 type UserRepository struct {
@@ -27,6 +32,10 @@ func NewUserRepository(storage UserStorage) *UserRepository {
 }
 
 func (r *UserRepository) Create(u CreateUserDto) (*User, error) {
+	newUser, err := r.storage.Create(u)
+	if err != nil {
+		return nil, fmt.Errorf("create user from storage due err: %v", err)
+	}
 
-	return nil, nil
+	return newUser, nil
 }

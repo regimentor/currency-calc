@@ -2,10 +2,10 @@ package http
 
 import (
 	"fmt"
+	"github.com/regimentor/currency-calc/internal"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/regimentor/currency-calc/internal"
 )
 
 type UserHandler struct {
@@ -13,7 +13,7 @@ type UserHandler struct {
 }
 
 func (h *UserHandler) CreateUser(c echo.Context) error {
-	newUser, err := h.repository.Create(&internal.User{})
+	newUser, err := h.repository.Create(internal.CreateUserDto{})
 	if err != nil {
 		return fmt.Errorf("crete user due err: %v", err)
 	}
