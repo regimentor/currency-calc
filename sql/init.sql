@@ -12,8 +12,10 @@ create table users
 create table currencies
 (
     id    serial primary key,
-    slug  text    not null,
-    value float not null
+    slug  text  not null,
+    value float not null,
+    date  date  not null,
+    base  text  not null
 );
 
 

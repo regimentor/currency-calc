@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/regimentor/currency-calc/internal"
 	"log"
+	"time"
 )
 
 type UserRepository interface {
@@ -13,12 +14,17 @@ type UserRepository interface {
 	GetById(id internal.UserId) (*internal.User, error)
 }
 
-type Server struct {
-	userRepository UserRepository
+type CurrenciesRepository interface {
+	GetBySlug(currencies []string, date time.Time) ([]internal.Currency, error)
 }
 
-func NewServer(userRepository UserRepository) *Server {
-	return &Server{userRepository: userRepository}
+type Server struct {
+	userRepository       UserRepository
+	currenciesRepository CurrenciesRepository
+}
+
+func NewServer(userRepository UserRepository, currenciesRepository CurrenciesRepository) *Server {
+	return &Server{userRepository: userRepository, currenciesRepository: currenciesRepository}
 }
 
 func AuthenticationMiddleware(userRepository UserRepository) echo.MiddlewareFunc {
@@ -47,7 +53,7 @@ func (s *Server) Listen() error {
 	userHandler := UserHandler{repository: s.userRepository}
 	server.POST("/user", userHandler.CreateUser)
 
-	currencyHandler := CurrencyHandler{}
+	currencyHandler := CurrencyHandler{repository: s.currenciesRepository}
 	authorised.GET("/currencies", currencyHandler.GetCurrencies)
 	authorised.GET("/currencies/from-to", currencyHandler.GetCurrenciesFromTo)
 

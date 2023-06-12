@@ -1,12 +1,14 @@
 package main
 
 import (
+	"log"
+	"os"
+
 	"github.com/joho/godotenv"
 	"github.com/regimentor/currency-calc/internal"
 	"github.com/regimentor/currency-calc/internal/api/http"
+	currencyapi_com "github.com/regimentor/currency-calc/internal/currencyapi.com"
 	"github.com/regimentor/currency-calc/internal/postgresql"
-	"log"
-	"os"
 )
 
 func main() {
@@ -18,6 +20,7 @@ func main() {
 	psqlUser := os.Getenv("POSTGRESQL_USERNAME")
 	psqlPass := os.Getenv("POSTGRESQL_PASSWORD")
 	psqlDb := os.Getenv("POSTGRESQL_DATABASE")
+	currencyComApiKey := os.Getenv("CURRENCIES_COM_API_KEY")
 
 	// TODO: pass a context
 	poll, err := NewConnection(psqlUser, psqlPass, psqlDb)
@@ -27,7 +30,12 @@ func main() {
 
 	userStorage := postgresql.NewUserStorage(poll)
 	userRepository := internal.NewUserRepository(userStorage)
-	httpServer := http.NewServer(userRepository)
+
+	currencyStorage := postgresql.NewCurrencyStorage(poll)
+	currencyApiCom := currencyapi_com.NewCurrencyApiCom(currencyapi_com.ApiKey(currencyComApiKey))
+	currencyRepository := internal.NewCurrencyRepository(currencyStorage, currencyApiCom)
+
+	httpServer := http.NewServer(userRepository, currencyRepository)
 
 	err = httpServer.Listen()
 	if err != nil {
