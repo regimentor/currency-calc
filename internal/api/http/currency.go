@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/regimentor/currency-calc/internal"
 	"log"
 	"net/http"
 	"strings"
@@ -9,11 +10,21 @@ import (
 )
 
 type CurrencyHandler struct {
-	repository CurrenciesRepository
+	repository        CurrenciesRepository
+	apiLogsRepository ApiLogsRepository
 }
 
 func (h *CurrencyHandler) GetCurrencies(c echo.Context) error {
 	log.Println("_____________________get currencies______________________")
+
+	if err := h.apiLogsRepository.Create(&internal.CreateApiLogsDto{
+		UserId:      c.Get("userId").(internal.UserId),
+		RequestType: internal.GET_ALL,
+		RequestTime: time.Now(),
+	}); err != nil {
+		log.Printf("CurrencyHandler.GetCurrencies create api logs due err: %v", err)
+	}
+
 	date := c.QueryParam("date")
 	currencies := strings.Split(c.QueryParam("currencies"), ",")
 
@@ -33,6 +44,15 @@ func (h *CurrencyHandler) GetCurrencies(c echo.Context) error {
 
 func (h *CurrencyHandler) GetCurrenciesFromTo(c echo.Context) error {
 	log.Println("_____________________get currencies from to______________________")
+
+	if err := h.apiLogsRepository.Create(&internal.CreateApiLogsDto{
+		UserId:      c.Get("userId").(internal.UserId),
+		RequestType: internal.GET_BY_BASE,
+		RequestTime: time.Now(),
+	}); err != nil {
+		log.Printf("CurrencyHandler.GetCurrenciesFromTo create api logs due err: %v", err)
+	}
+
 	date := c.QueryParam("date")
 	currencies := strings.Split(c.QueryParam("currencies"), ",")
 	base := c.QueryParam("base")

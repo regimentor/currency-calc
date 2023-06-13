@@ -35,7 +35,10 @@ func main() {
 	currencyApiCom := currencyapi_com.NewCurrencyApiCom(currencyapi_com.ApiKey(currencyComApiKey))
 	currencyRepository := internal.NewCurrencyRepository(currencyStorage, currencyApiCom)
 
-	httpServer := http.NewServer(userRepository, currencyRepository)
+	apiLogsStorage := postgresql.NewApiLogStorage(poll)
+	apiLogsRepository := internal.NewApiLogsRepository(apiLogsStorage)
+
+	httpServer := http.NewServer(userRepository, currencyRepository, apiLogsRepository)
 
 	err = httpServer.Listen()
 	if err != nil {

@@ -2,11 +2,16 @@ package http
 
 import (
 	"fmt"
-	"github.com/labstack/echo/v4"
-	"github.com/regimentor/currency-calc/internal"
 	"log"
 	"time"
+
+	"github.com/labstack/echo/v4"
+	"github.com/regimentor/currency-calc/internal"
 )
+
+type ApiLogsRepository interface {
+	Create(apiLogs *internal.CreateApiLogsDto) error
+}
 
 type UserRepository interface {
 	Create(u internal.CreateUserDto) (*internal.User, error)
@@ -22,10 +27,15 @@ type CurrenciesRepository interface {
 type Server struct {
 	userRepository       UserRepository
 	currenciesRepository CurrenciesRepository
+	apiLogsRepository    ApiLogsRepository
 }
 
-func NewServer(userRepository UserRepository, currenciesRepository CurrenciesRepository) *Server {
-	return &Server{userRepository: userRepository, currenciesRepository: currenciesRepository}
+func NewServer(userRepository UserRepository, currenciesRepository CurrenciesRepository, apiLogsRepository ApiLogsRepository) *Server {
+	return &Server{
+		userRepository:       userRepository,
+		currenciesRepository: currenciesRepository,
+		apiLogsRepository:    apiLogsRepository,
+	}
 }
 
 func AuthenticationMiddleware(userRepository UserRepository) echo.MiddlewareFunc {
@@ -37,10 +47,12 @@ func AuthenticationMiddleware(userRepository UserRepository) echo.MiddlewareFunc
 				return echo.ErrUnauthorized
 			}
 
-			_, err := userRepository.GetByApiKey(internal.ApiKey(apiKey))
+			user, err := userRepository.GetByApiKey(internal.ApiKey(apiKey))
 			if err != nil {
 				return echo.ErrUnauthorized
 			}
+
+			c.Set("userId", user.ID)
 
 			return next(c)
 		}
@@ -54,7 +66,10 @@ func (s *Server) Listen() error {
 	userHandler := UserHandler{repository: s.userRepository}
 	server.POST("/user", userHandler.CreateUser)
 
-	currencyHandler := CurrencyHandler{repository: s.currenciesRepository}
+	currencyHandler := CurrencyHandler{
+		repository:        s.currenciesRepository,
+		apiLogsRepository: s.apiLogsRepository,
+	}
 	authorised.GET("/currencies", currencyHandler.GetCurrencies)
 	authorised.GET("/currencies/from-to", currencyHandler.GetCurrenciesFromTo)
 
