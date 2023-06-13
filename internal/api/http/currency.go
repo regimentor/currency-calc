@@ -13,6 +13,7 @@ type CurrencyHandler struct {
 }
 
 func (h *CurrencyHandler) GetCurrencies(c echo.Context) error {
+	log.Println("_____________________get currencies______________________")
 	date := c.QueryParam("date")
 	currencies := strings.Split(c.QueryParam("currencies"), ",")
 
@@ -31,5 +32,22 @@ func (h *CurrencyHandler) GetCurrencies(c echo.Context) error {
 }
 
 func (h *CurrencyHandler) GetCurrenciesFromTo(c echo.Context) error {
-	return c.String(http.StatusOK, "/currencies/from-to")
+	log.Println("_____________________get currencies from to______________________")
+	date := c.QueryParam("date")
+	currencies := strings.Split(c.QueryParam("currencies"), ",")
+	base := c.QueryParam("base")
+
+	parsedTime, err := time.Parse("2006-01-02", date)
+	if err != nil {
+		log.Printf("CurrencyHandler.GetCurrenciesFromTo parse time due err: %v", err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	byDate, err := h.repository.GetBySlugAndBase(currencies, base, parsedTime)
+	if err != nil {
+		log.Printf("CurrencyHandler.GetCurrenciesFromTo get currencies due err: %v", err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	return c.JSON(http.StatusOK, byDate)
 }

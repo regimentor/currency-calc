@@ -16,6 +16,7 @@ type UserRepository interface {
 
 type CurrenciesRepository interface {
 	GetBySlug(currencies []string, date time.Time) ([]internal.Currency, error)
+	GetBySlugAndBase(slugs []string, base string, date time.Time) ([]internal.Currency, error)
 }
 
 type Server struct {

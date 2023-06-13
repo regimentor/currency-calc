@@ -53,7 +53,7 @@ func (c *CurrencyApiCom) GetCurrenciesByDate(currencies []string, date time.Time
 	return response, nil
 }
 
-func (c *CurrencyApiCom) getCurrenciesFromTo(base string, currencies []string, date time.Time) (*CurrenciesComResponse, error) {
+func (c *CurrencyApiCom) GetCurrenciesFromTo(base string, currencies []string, date time.Time) (*CurrenciesComResponse, error) {
 	// https://api.currencyapi.com/v3/historical?apikey=APIKEY&base_currency=USD&currencies=EUR,RUB,JPY,USD&date=2014-01-01
 	year, month, day := date.Date()
 	url := fmt.Sprintf("https://api.currencyapi.com/v3/historical?apikey=%s&base_currency=%s&currencies=%s&date=%d-%d-%d",

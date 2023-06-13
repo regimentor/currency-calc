@@ -27,7 +27,7 @@ type CreateCurrencyDto struct {
 
 type CurrencyStorage interface {
 	GetBySlug(slug []string, date time.Time) ([]Currency, error)
-	GetBySlugAndBase(slug, base string, date time.Time) (*Currency, error)
+	GetBySlugAndBase(slug []string, base string, date time.Time) ([]Currency, error)
 	Create(currency *CreateCurrencyDto) (*Currency, error)
 }
 
@@ -41,8 +41,9 @@ func NewCurrencyRepository(storage CurrencyStorage, api *currencyapi_com.Currenc
 }
 
 func (r *CurrencyRepository) GetBySlug(slug []string, date time.Time) ([]Currency, error) {
-	curs, err := r.storage.GetBySlug(slug, date)
+	log.Printf("CurrencyRepository.GetBySlug slug: %s, date: %s", slug, date)
 
+	curs, err := r.storage.GetBySlug(slug, date)
 	if err != nil {
 		log.Printf("CurrencyRepository.GetBySlug, err: %v", err)
 
@@ -72,4 +73,41 @@ func (r *CurrencyRepository) GetBySlug(slug []string, date time.Time) ([]Currenc
 	}
 
 	return curs, nil
+}
+
+func (r *CurrencyRepository) GetBySlugAndBase(slugs []string, base string, date time.Time) ([]Currency, error) {
+	log.Printf("CurrencyRepository.GetBySlugAndBase slug: %s, base: %s, date: %s", slugs, base, date)
+
+	currencies, err := r.storage.GetBySlugAndBase(slugs, base, date)
+	if err != nil {
+		log.Printf("CurrencyRepository.GetBySlugAndBase, err: %v", err)
+
+		res, err := r.api.GetCurrenciesFromTo(base, slugs, date)
+		if err != nil {
+			return nil, fmt.Errorf("get currency due err: %v", err)
+		}
+
+		currencies := make([]Currency, 0, len(slugs))
+
+		for _, slug := range slugs {
+			newCurrency := &CreateCurrencyDto{
+				Slug:  slug,
+				Value: res.Data[slug].Value,
+				Date:  date,
+				Base:  base,
+			}
+
+			currency, err := r.storage.Create(newCurrency)
+			if err != nil {
+				return nil, fmt.Errorf("get currency due err: %v", err)
+			}
+
+			currencies = append(currencies, *currency)
+		}
+
+		return currencies, nil
+
+	}
+
+	return currencies, nil
 }

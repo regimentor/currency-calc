@@ -54,7 +54,7 @@ func (c *CurrencyStorage) GetBySlug(slug []string, date time.Time) ([]internal.C
 	return currencies, nil
 }
 
-func (c *CurrencyStorage) GetBySlugAndBase(slug, base string, date time.Time) (*internal.Currency, error) {
+func (c *CurrencyStorage) GetBySlugAndBase(slug []string, base string, date time.Time) ([]internal.Currency, error) {
 	log.Printf("CurrencyStorage.GetBySlugAndBase slug: %s, base: %s, date: %s", slug, base, date)
 
 	year, month, day := date.Date()
@@ -62,19 +62,33 @@ func (c *CurrencyStorage) GetBySlugAndBase(slug, base string, date time.Time) (*
 
 	query := `
 		select id, slug, value, date, base from currencies 
-		where slug = $1 and base = $2 and date = $3;
+		where slug = any($1) and base = $2 and date = $3;
 	`
 
-	currency := &internal.Currency{}
-	row := c.connection.QueryRow(context.Background(), query, slug, base, dateStr)
+	currencies := make([]internal.Currency, 0, len(slug))
+	rows, err := c.connection.Query(context.Background(), query, slug, base, dateStr)
 
-	if err := row.Scan(&currency.ID, &currency.Slug, &currency.Value, &currency.Date, &currency.Base); err != nil {
+	if err != nil {
 		return nil, fmt.Errorf("get currency due err: %v", err)
 	}
 
-	log.Printf("CurrencyStorage.GetBySlugAndBase, got currency: %v", currency)
+	for rows.Next() {
+		currency := internal.Currency{}
+		err := rows.Scan(&currency.ID, &currency.Slug, &currency.Value, &currency.Date, &currency.Base)
+		if err != nil {
+			return nil, fmt.Errorf("get currency due err: %v", err)
+		}
 
-	return currency, nil
+		currencies = append(currencies, currency)
+	}
+
+	if len(currencies) == 0 {
+		return nil, fmt.Errorf("get currency due err: not found")
+	}
+
+	log.Printf("CurrencyStorage.GetBySlugAndBase, got currencies: %v", currencies)
+
+	return currencies, nil
 }
 
 func (c *CurrencyStorage) Create(currency *internal.CreateCurrencyDto) (*internal.Currency, error) {
