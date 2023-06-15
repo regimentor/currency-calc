@@ -7,8 +7,8 @@ import (
 	"log"
 )
 
-func NewConnection(user, password, db string) (*pgxpool.Pool, error) {
-	dbUrl := fmt.Sprintf("postgresql://%s:%s@localhost:5432/%s", user, password, db)
+func NewConnection(user, password, db, host string) (*pgxpool.Pool, error) {
+	dbUrl := fmt.Sprintf("postgresql://%s:%s@%s:5432/%s", user, password, host, db)
 	log.Printf("connection to database with url: %v", dbUrl)
 	pool, err := pgxpool.New(context.Background(), dbUrl)
 	if err != nil {

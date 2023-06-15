@@ -20,10 +20,11 @@ func main() {
 	psqlUser := os.Getenv("POSTGRESQL_USERNAME")
 	psqlPass := os.Getenv("POSTGRESQL_PASSWORD")
 	psqlDb := os.Getenv("POSTGRESQL_DATABASE")
+	psqlHost := os.Getenv("POSTGRESQL_HOST")
 	currencyComApiKey := os.Getenv("CURRENCIES_COM_API_KEY")
 
 	// TODO: pass a context
-	poll, err := NewConnection(psqlUser, psqlPass, psqlDb)
+	poll, err := NewConnection(psqlUser, psqlPass, psqlDb, psqlHost)
 	if err != nil {
 		log.Fatalf("connection to database due err: %v", err)
 	}
