@@ -17,7 +17,7 @@ func NewCurrencyStorage(connection *pgxpool.Pool) *CurrencyStorage {
 	return &CurrencyStorage{connection: connection}
 }
 
-func (c *CurrencyStorage) GetBySlug(slug []string, date time.Time) ([]internal.Currency, error) {
+func (c *CurrencyStorage) GetBySlug(ctx context.Context, slug []string, date time.Time) ([]internal.Currency, error) {
 	log.Printf("CurrencyStorage.GetByDate slug: %s, base: %s", slug, date)
 
 	year, month, day := date.Date()
@@ -30,7 +30,7 @@ func (c *CurrencyStorage) GetBySlug(slug []string, date time.Time) ([]internal.C
 
 	currencies := make([]internal.Currency, 0, len(slug))
 
-	rows, err := c.connection.Query(context.Background(), query, slug, dateStr)
+	rows, err := c.connection.Query(ctx, query, slug, dateStr)
 	if err != nil {
 		return nil, fmt.Errorf("get currency due err: %v", err)
 	}
@@ -54,7 +54,7 @@ func (c *CurrencyStorage) GetBySlug(slug []string, date time.Time) ([]internal.C
 	return currencies, nil
 }
 
-func (c *CurrencyStorage) GetBySlugAndBase(slug []string, base string, date time.Time) ([]internal.Currency, error) {
+func (c *CurrencyStorage) GetBySlugAndBase(ctx context.Context, slug []string, base string, date time.Time) ([]internal.Currency, error) {
 	log.Printf("CurrencyStorage.GetBySlugAndBase slug: %s, base: %s, date: %s", slug, base, date)
 
 	year, month, day := date.Date()
@@ -66,7 +66,7 @@ func (c *CurrencyStorage) GetBySlugAndBase(slug []string, base string, date time
 	`
 
 	currencies := make([]internal.Currency, 0, len(slug))
-	rows, err := c.connection.Query(context.Background(), query, slug, base, dateStr)
+	rows, err := c.connection.Query(ctx, query, slug, base, dateStr)
 
 	if err != nil {
 		return nil, fmt.Errorf("get currency due err: %v", err)
@@ -91,7 +91,7 @@ func (c *CurrencyStorage) GetBySlugAndBase(slug []string, base string, date time
 	return currencies, nil
 }
 
-func (c *CurrencyStorage) Create(currency *internal.CreateCurrencyDto) (*internal.Currency, error) {
+func (c *CurrencyStorage) Create(ctx context.Context, currency *internal.CreateCurrencyDto) (*internal.Currency, error) {
 	log.Printf("CurrencyStorage.Create currency: %v", currency)
 
 	query := `
@@ -101,7 +101,7 @@ func (c *CurrencyStorage) Create(currency *internal.CreateCurrencyDto) (*interna
 
 	newCurrency := &internal.Currency{}
 
-	row := c.connection.QueryRow(context.Background(), query, currency.Slug, currency.Value, currency.Date, currency.Base)
+	row := c.connection.QueryRow(ctx, query, currency.Slug, currency.Value, currency.Date, currency.Base)
 	if err := row.Scan(&newCurrency.ID, &newCurrency.Slug, &newCurrency.Value, &newCurrency.Date, &newCurrency.Base); err != nil {
 		return nil, fmt.Errorf("create currency due err: %v", err)
 	}

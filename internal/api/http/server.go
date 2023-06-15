@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -10,18 +11,18 @@ import (
 )
 
 type ApiLogsRepository interface {
-	Create(apiLogs *internal.CreateApiLogsDto) error
+	Create(ctx context.Context, apiLogs *internal.CreateApiLogsDto) error
 }
 
 type UserRepository interface {
-	Create(u internal.CreateUserDto) (*internal.User, error)
-	GetByApiKey(apiKey internal.ApiKey) (*internal.User, error)
-	GetById(id internal.UserId) (*internal.User, error)
+	Create(ctx context.Context, u internal.CreateUserDto) (*internal.User, error)
+	GetByApiKey(ctx context.Context, apiKey internal.ApiKey) (*internal.User, error)
+	GetById(ctx context.Context, id internal.UserId) (*internal.User, error)
 }
 
 type CurrenciesRepository interface {
-	GetBySlug(currencies []string, date time.Time) ([]internal.Currency, error)
-	GetBySlugAndBase(slugs []string, base string, date time.Time) ([]internal.Currency, error)
+	GetBySlug(ctx context.Context, currencies []string, date time.Time) ([]internal.Currency, error)
+	GetBySlugAndBase(ctx context.Context, slugs []string, base string, date time.Time) ([]internal.Currency, error)
 }
 
 type Server struct {
@@ -47,7 +48,8 @@ func AuthenticationMiddleware(userRepository UserRepository) echo.MiddlewareFunc
 				return echo.ErrUnauthorized
 			}
 
-			user, err := userRepository.GetByApiKey(internal.ApiKey(apiKey))
+			ctx := c.Request().Context()
+			user, err := userRepository.GetByApiKey(ctx, internal.ApiKey(apiKey))
 			if err != nil {
 				return echo.ErrUnauthorized
 			}

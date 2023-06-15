@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 
@@ -12,6 +13,10 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("Error loading .env file")
@@ -22,9 +27,8 @@ func main() {
 	psqlDb := os.Getenv("POSTGRESQL_DATABASE")
 	psqlHost := os.Getenv("POSTGRESQL_HOST")
 	currencyComApiKey := os.Getenv("CURRENCIES_COM_API_KEY")
-
-	// TODO: pass a context
-	poll, err := NewConnection(psqlUser, psqlPass, psqlDb, psqlHost)
+	
+	poll, err := NewConnection(ctx, psqlUser, psqlPass, psqlDb, psqlHost)
 	if err != nil {
 		log.Fatalf("connection to database due err: %v", err)
 	}

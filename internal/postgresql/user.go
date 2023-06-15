@@ -16,7 +16,7 @@ func NewUserStorage(connection *pgxpool.Pool) *UserStorage {
 	return &UserStorage{connection: connection}
 }
 
-func (s *UserStorage) GetById(id internal.UserId) (*internal.User, error) {
+func (s *UserStorage) GetById(ctx context.Context, id internal.UserId) (*internal.User, error) {
 	log.Printf("UserStorage.GetById: %v", id)
 
 	query := `
@@ -25,7 +25,7 @@ func (s *UserStorage) GetById(id internal.UserId) (*internal.User, error) {
 
 	user := &internal.User{}
 
-	row := s.connection.QueryRow(context.Background(), query, id)
+	row := s.connection.QueryRow(ctx, query, id)
 	if err := row.Scan(&user.ID, &user.ApiKey); err != nil {
 		return nil, fmt.Errorf("get user due err: %v", err)
 	}
@@ -35,7 +35,7 @@ func (s *UserStorage) GetById(id internal.UserId) (*internal.User, error) {
 	return user, nil
 }
 
-func (s *UserStorage) GetByApiKey(apiKey internal.ApiKey) (*internal.User, error) {
+func (s *UserStorage) GetByApiKey(ctx context.Context, apiKey internal.ApiKey) (*internal.User, error) {
 	log.Printf("UserStorage.GetByApiKey: %v", apiKey)
 
 	query := `
@@ -44,7 +44,7 @@ func (s *UserStorage) GetByApiKey(apiKey internal.ApiKey) (*internal.User, error
 
 	user := &internal.User{}
 
-	row := s.connection.QueryRow(context.Background(), query, apiKey)
+	row := s.connection.QueryRow(ctx, query, apiKey)
 	if err := row.Scan(&user.ID, &user.ApiKey); err != nil {
 		return nil, fmt.Errorf("get user due err: %v", err)
 	}
@@ -54,7 +54,7 @@ func (s *UserStorage) GetByApiKey(apiKey internal.ApiKey) (*internal.User, error
 	return user, nil
 }
 
-func (s *UserStorage) Create(u internal.CreateUserDto) (*internal.User, error) {
+func (s *UserStorage) Create(ctx context.Context, u internal.CreateUserDto) (*internal.User, error) {
 	log.Printf("UserStorage.Create: %v", u)
 
 	createUserQuery := `
@@ -62,7 +62,7 @@ func (s *UserStorage) Create(u internal.CreateUserDto) (*internal.User, error) {
 	`
 	newUser := &internal.User{}
 
-	row := s.connection.QueryRow(context.Background(), createUserQuery, u.ApiKey)
+	row := s.connection.QueryRow(ctx, createUserQuery, u.ApiKey)
 	log.Print(row)
 	if err := row.Scan(&newUser.ID, &newUser.ApiKey); err != nil {
 		return nil, fmt.Errorf("create user due err: %v", err)

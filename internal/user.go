@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -38,9 +39,9 @@ type CreateUserDto struct {
 }
 
 type UserStorage interface {
-	GetById(id UserId) (*User, error)
-	GetByApiKey(apiKey ApiKey) (*User, error)
-	Create(u CreateUserDto) (*User, error)
+	GetById(ctx context.Context, id UserId) (*User, error)
+	GetByApiKey(ctx context.Context, apiKey ApiKey) (*User, error)
+	Create(ctx context.Context, u CreateUserDto) (*User, error)
 }
 
 type UserRepository struct {
@@ -51,9 +52,9 @@ func NewUserRepository(storage UserStorage) *UserRepository {
 	return &UserRepository{storage: storage}
 }
 
-func (r *UserRepository) Create(u CreateUserDto) (*User, error) {
+func (r *UserRepository) Create(ctx context.Context, u CreateUserDto) (*User, error) {
 	log.Printf("UserRepository:create user %s", u.ApiKey)
-	newUser, err := r.storage.Create(u)
+	newUser, err := r.storage.Create(ctx, u)
 	if err != nil {
 		return nil, fmt.Errorf("create user from storage due err: %v", err)
 	}
@@ -61,9 +62,9 @@ func (r *UserRepository) Create(u CreateUserDto) (*User, error) {
 	return newUser, nil
 }
 
-func (r *UserRepository) GetById(id UserId) (*User, error) {
+func (r *UserRepository) GetById(ctx context.Context, id UserId) (*User, error) {
 	log.Printf("UserRepository:GetById %d", id)
-	user, err := r.storage.GetById(id)
+	user, err := r.storage.GetById(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("get user from storage due err: %v", err)
 	}
@@ -71,9 +72,9 @@ func (r *UserRepository) GetById(id UserId) (*User, error) {
 	return user, nil
 }
 
-func (r *UserRepository) GetByApiKey(apiKey ApiKey) (*User, error) {
+func (r *UserRepository) GetByApiKey(ctx context.Context, apiKey ApiKey) (*User, error) {
 	log.Printf("UserRepository:GetByApiKey %s", apiKey)
-	user, err := r.storage.GetByApiKey(apiKey)
+	user, err := r.storage.GetByApiKey(ctx, apiKey)
 	if err != nil {
 		return nil, fmt.Errorf("get user from storage due err: %v", err)
 	}

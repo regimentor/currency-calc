@@ -17,7 +17,7 @@ func NewApiLogStorage(connection *pgxpool.Pool) *ApiLogStorage {
 	return &ApiLogStorage{connection: connection}
 }
 
-func (a *ApiLogStorage) Create(apiLog *internal.CreateApiLogsDto) error {
+func (a *ApiLogStorage) Create(ctx context.Context, apiLog *internal.CreateApiLogsDto) error {
 	log.Printf("ApiLogStorage.Create apiLog: %v", apiLog)
 
 	query := `
@@ -28,7 +28,7 @@ func (a *ApiLogStorage) Create(apiLog *internal.CreateApiLogsDto) error {
 	year, month, day := apiLog.RequestTime.Date()
 	dateStr := fmt.Sprintf("%d-%d-%d", year, month, day)
 
-	row := a.connection.QueryRow(context.Background(), query,
+	row := a.connection.QueryRow(ctx, query,
 		apiLog.UserId, dateStr, apiLog.RequestType)
 
 	var id int64

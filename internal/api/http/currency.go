@@ -36,10 +36,11 @@ func validateSlugs(slugs []string) bool {
 
 func (h *CurrencyHandler) GetCurrencies(c echo.Context) error {
 	log.Println("_____________________get currencies______________________")
+	ctx := c.Request().Context()
 
-	if err := h.apiLogsRepository.Create(&internal.CreateApiLogsDto{
+	if err := h.apiLogsRepository.Create(ctx, &internal.CreateApiLogsDto{
 		UserId:      c.Get("userId").(internal.UserId),
-		RequestType: internal.GET_ALL,
+		RequestType: internal.GetAll,
 		RequestTime: time.Now(),
 	}); err != nil {
 		log.Printf("CurrencyHandler.GetCurrencies create api logs due err: %v", err)
@@ -57,7 +58,7 @@ func (h *CurrencyHandler) GetCurrencies(c echo.Context) error {
 		log.Printf("CurrencyHandler.GetCurrencies parse time due err: %v", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid date")
 	}
-	byDate, err := h.repository.GetBySlug(currencies, parsedTime)
+	byDate, err := h.repository.GetBySlug(ctx, currencies, parsedTime)
 	if err != nil {
 		log.Printf("CurrencyHandler.GetCurrencies get currencies due err: %v", err)
 		return echo.NewHTTPError(http.StatusBadRequest, err)
@@ -68,10 +69,11 @@ func (h *CurrencyHandler) GetCurrencies(c echo.Context) error {
 
 func (h *CurrencyHandler) GetCurrenciesFromTo(c echo.Context) error {
 	log.Println("_____________________get currencies from to______________________")
+	ctx := c.Request().Context()
 
-	if err := h.apiLogsRepository.Create(&internal.CreateApiLogsDto{
+	if err := h.apiLogsRepository.Create(ctx, &internal.CreateApiLogsDto{
 		UserId:      c.Get("userId").(internal.UserId),
-		RequestType: internal.GET_BY_BASE,
+		RequestType: internal.GetByBase,
 		RequestTime: time.Now(),
 	}); err != nil {
 		log.Printf("CurrencyHandler.GetCurrenciesFromTo create api logs due err: %v", err)
@@ -92,7 +94,7 @@ func (h *CurrencyHandler) GetCurrenciesFromTo(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid date")
 	}
 
-	byDate, err := h.repository.GetBySlugAndBase(currencies, base, parsedTime)
+	byDate, err := h.repository.GetBySlugAndBase(ctx, currencies, base, parsedTime)
 	if err != nil {
 		log.Printf("CurrencyHandler.GetCurrenciesFromTo get currencies due err: %v", err)
 		return echo.NewHTTPError(http.StatusBadRequest, err)

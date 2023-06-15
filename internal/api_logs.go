@@ -1,10 +1,13 @@
 package internal
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 const (
-	GET_ALL     = 1
-	GET_BY_BASE = 2
+	GetAll    = 1
+	GetByBase = 2
 )
 
 type ApiLogs struct {
@@ -21,7 +24,7 @@ type CreateApiLogsDto struct {
 }
 
 type ApiLogsStorage interface {
-	Create(apiLogs *CreateApiLogsDto) error
+	Create(ctx context.Context, apiLogs *CreateApiLogsDto) error
 }
 
 type ApiLogsRepository struct {
@@ -32,6 +35,6 @@ func NewApiLogsRepository(storage ApiLogsStorage) *ApiLogsRepository {
 	return &ApiLogsRepository{storage: storage}
 }
 
-func (r *ApiLogsRepository) Create(apiLogs *CreateApiLogsDto) error {
-	return r.storage.Create(apiLogs)
+func (r *ApiLogsRepository) Create(ctx context.Context, apiLogs *CreateApiLogsDto) error {
+	return r.storage.Create(ctx, apiLogs)
 }

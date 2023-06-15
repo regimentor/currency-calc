@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -26,9 +27,9 @@ type CreateCurrencyDto struct {
 }
 
 type CurrencyStorage interface {
-	GetBySlug(slug []string, date time.Time) ([]Currency, error)
-	GetBySlugAndBase(slug []string, base string, date time.Time) ([]Currency, error)
-	Create(currency *CreateCurrencyDto) (*Currency, error)
+	GetBySlug(ctx context.Context, slug []string, date time.Time) ([]Currency, error)
+	GetBySlugAndBase(ctx context.Context, slug []string, base string, date time.Time) ([]Currency, error)
+	Create(ctx context.Context, currency *CreateCurrencyDto) (*Currency, error)
 }
 
 type CurrencyRepository struct {
@@ -40,10 +41,10 @@ func NewCurrencyRepository(storage CurrencyStorage, api *currencyapi_com.Currenc
 	return &CurrencyRepository{storage: storage, api: api}
 }
 
-func (r *CurrencyRepository) GetBySlug(slug []string, date time.Time) ([]Currency, error) {
+func (r *CurrencyRepository) GetBySlug(ctx context.Context, slug []string, date time.Time) ([]Currency, error) {
 	log.Printf("CurrencyRepository.GetBySlug slug: %s, date: %s", slug, date)
 
-	curs, err := r.storage.GetBySlug(slug, date)
+	curs, err := r.storage.GetBySlug(ctx, slug, date)
 	if err != nil {
 		log.Printf("CurrencyRepository.GetBySlug, err: %v", err)
 
@@ -61,7 +62,7 @@ func (r *CurrencyRepository) GetBySlug(slug []string, date time.Time) ([]Currenc
 				Base:  "USD",
 			}
 
-			currency, err := r.storage.Create(newCurrency)
+			currency, err := r.storage.Create(ctx, newCurrency)
 			if err != nil {
 				return nil, fmt.Errorf("get currency due err: %v", err)
 			}
@@ -75,10 +76,10 @@ func (r *CurrencyRepository) GetBySlug(slug []string, date time.Time) ([]Currenc
 	return curs, nil
 }
 
-func (r *CurrencyRepository) GetBySlugAndBase(slugs []string, base string, date time.Time) ([]Currency, error) {
+func (r *CurrencyRepository) GetBySlugAndBase(ctx context.Context, slugs []string, base string, date time.Time) ([]Currency, error) {
 	log.Printf("CurrencyRepository.GetBySlugAndBase slug: %s, base: %s, date: %s", slugs, base, date)
 
-	currencies, err := r.storage.GetBySlugAndBase(slugs, base, date)
+	currencies, err := r.storage.GetBySlugAndBase(ctx, slugs, base, date)
 	if err != nil {
 		log.Printf("CurrencyRepository.GetBySlugAndBase, err: %v", err)
 
@@ -97,7 +98,7 @@ func (r *CurrencyRepository) GetBySlugAndBase(slugs []string, base string, date 
 				Base:  base,
 			}
 
-			currency, err := r.storage.Create(newCurrency)
+			currency, err := r.storage.Create(ctx, newCurrency)
 			if err != nil {
 				return nil, fmt.Errorf("get currency due err: %v", err)
 			}

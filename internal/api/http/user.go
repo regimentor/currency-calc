@@ -19,7 +19,8 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 	apiKey.Generate()
 	log.Printf("create user %s", apiKey)
 
-	newUser, err := h.repository.Create(internal.CreateUserDto{ApiKey: apiKey})
+	ctx := c.Request().Context()
+	newUser, err := h.repository.Create(ctx, internal.CreateUserDto{ApiKey: apiKey})
 	if err != nil {
 		log.Printf("create user due err: %v", err)
 		return fmt.Errorf("crete user due err: %v", err)
