@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/joho/godotenv"
 	"github.com/regimentor/currency-calc/internal"
@@ -27,7 +28,7 @@ func main() {
 	psqlDb := os.Getenv("POSTGRESQL_DATABASE")
 	psqlHost := os.Getenv("POSTGRESQL_HOST")
 	currencyComApiKey := os.Getenv("CURRENCIES_COM_API_KEY")
-	
+
 	poll, err := NewConnection(ctx, psqlUser, psqlPass, psqlDb, psqlHost)
 	if err != nil {
 		log.Fatalf("connection to database due err: %v", err)
@@ -45,10 +46,16 @@ func main() {
 
 	httpServer := http.NewServer(userRepository, currencyRepository, apiLogsRepository)
 
-	err = httpServer.Listen()
-	if err != nil {
-		log.Fatalf("create http server due err: %v", err)
-	}
+	wg := sync.WaitGroup{}
 
-	log.Println(poll)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err = httpServer.Listen()
+		if err != nil {
+			log.Fatalf("create http server due err: %v", err)
+		}
+	}()
+
+	wg.Wait()
 }
