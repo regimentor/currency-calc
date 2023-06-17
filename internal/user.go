@@ -12,7 +12,7 @@ import (
 type UserId uint
 type ApiKey string
 
-func (r *ApiKey) Generate() {
+func GenerateApiKey() ApiKey {
 	timestamp := time.Now().Unix()
 
 	byteArray := make([]byte, 8)
@@ -26,7 +26,7 @@ func (r *ApiKey) Generate() {
 
 	hex.EncodeToString(hash[:])
 
-	*r = ApiKey(hex.EncodeToString(hash[:]))
+	return ApiKey(hex.EncodeToString(hash[:]))
 }
 
 type User struct {

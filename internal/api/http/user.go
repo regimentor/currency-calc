@@ -15,15 +15,14 @@ type UserHandler struct {
 
 func (h *UserHandler) CreateUser(c echo.Context) error {
 	log.Println("create user")
-	var apiKey internal.ApiKey
-	apiKey.Generate()
+	apiKey := internal.GenerateApiKey()
 	log.Printf("create user %s", apiKey)
 
 	ctx := c.Request().Context()
 	newUser, err := h.repository.Create(ctx, internal.CreateUserDto{ApiKey: apiKey})
 	if err != nil {
 		log.Printf("create user due err: %v", err)
-		return fmt.Errorf("crete user due err: %v", err)
+		return fmt.Errorf("crete user due err: %w", err)
 	}
 
 	return c.JSON(http.StatusOK, newUser)

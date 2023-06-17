@@ -63,7 +63,7 @@ func (s *UserStorage) Create(ctx context.Context, u internal.CreateUserDto) (*in
 	newUser := &internal.User{}
 
 	row := s.connection.QueryRow(ctx, createUserQuery, u.ApiKey)
-	log.Print(row)
+
 	if err := row.Scan(&newUser.ID, &newUser.ApiKey); err != nil {
 		return nil, fmt.Errorf("create user due err: %v", err)
 	}

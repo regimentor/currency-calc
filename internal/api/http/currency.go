@@ -58,6 +58,7 @@ func (h *CurrencyHandler) GetCurrencies(c echo.Context) error {
 		log.Printf("CurrencyHandler.GetCurrencies parse time due err: %v", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid date")
 	}
+
 	byDate, err := h.repository.GetBySlug(ctx, currencies, parsedTime)
 	if err != nil {
 		log.Printf("CurrencyHandler.GetCurrencies get currencies due err: %v", err)

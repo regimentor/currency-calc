@@ -28,25 +28,20 @@ func (c *CurrencyStorage) GetBySlug(ctx context.Context, slug []string, date tim
 		where slug = any($1) and date = $2;
 	`
 
-	currencies := make([]internal.Currency, 0, len(slug))
-
 	rows, err := c.connection.Query(ctx, query, slug, dateStr)
 	if err != nil {
-		return nil, fmt.Errorf("get currency due err: %v", err)
+		return nil, fmt.Errorf("get currency due err: %w", err)
 	}
 
+	currencies := make([]internal.Currency, 0, len(slug))
 	for rows.Next() {
 		currency := internal.Currency{}
 		err := rows.Scan(&currency.ID, &currency.Slug, &currency.Value, &currency.Date, &currency.Base)
 		if err != nil {
-			return nil, fmt.Errorf("get currency due err: %v", err)
+			return nil, fmt.Errorf("get currency due err: %w", err)
 		}
 
 		currencies = append(currencies, currency)
-	}
-
-	if len(currencies) == 0 {
-		return nil, fmt.Errorf("get currency due err: not found")
 	}
 
 	log.Printf("CurrencyStorage.GetByDate, got currencies: %v", currencies)
@@ -69,21 +64,17 @@ func (c *CurrencyStorage) GetBySlugAndBase(ctx context.Context, slug []string, b
 	rows, err := c.connection.Query(ctx, query, slug, base, dateStr)
 
 	if err != nil {
-		return nil, fmt.Errorf("get currency due err: %v", err)
+		return nil, fmt.Errorf("get currency due err: %w", err)
 	}
 
 	for rows.Next() {
 		currency := internal.Currency{}
 		err := rows.Scan(&currency.ID, &currency.Slug, &currency.Value, &currency.Date, &currency.Base)
 		if err != nil {
-			return nil, fmt.Errorf("get currency due err: %v", err)
+			return nil, fmt.Errorf("get currency due err: %w", err)
 		}
 
 		currencies = append(currencies, currency)
-	}
-
-	if len(currencies) == 0 {
-		return nil, fmt.Errorf("get currency due err: not found")
 	}
 
 	log.Printf("CurrencyStorage.GetBySlugAndBase, got currencies: %v", currencies)
@@ -103,7 +94,7 @@ func (c *CurrencyStorage) Create(ctx context.Context, currency *internal.CreateC
 
 	row := c.connection.QueryRow(ctx, query, currency.Slug, currency.Value, currency.Date, currency.Base)
 	if err := row.Scan(&newCurrency.ID, &newCurrency.Slug, &newCurrency.Value, &newCurrency.Date, &newCurrency.Base); err != nil {
-		return nil, fmt.Errorf("create currency due err: %v", err)
+		return nil, fmt.Errorf("create currency due err: %w", err)
 	}
 
 	log.Printf("CurrencyStorage.Create, got currency: %v", newCurrency)

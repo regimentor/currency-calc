@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	currencyapi_com "github.com/regimentor/currency-calc/internal/currencyapi.com"
+	"github.com/regimentor/currency-calc/internal/currencyapi.com"
 )
 
 type CurrencyId int64
@@ -32,12 +32,17 @@ type CurrencyStorage interface {
 	Create(ctx context.Context, currency *CreateCurrencyDto) (*Currency, error)
 }
 
-type CurrencyRepository struct {
-	storage CurrencyStorage
-	api     *currencyapi_com.CurrencyApiCom
+type ExternalCurrencyApi interface {
+	GetCurrenciesByDate(slug []string, date time.Time) (*currencyapi_com.CurrenciesComResponse, error)
+	GetCurrenciesFromTo(base string, currencies []string, date time.Time) (*currencyapi_com.CurrenciesComResponse, error)
 }
 
-func NewCurrencyRepository(storage CurrencyStorage, api *currencyapi_com.CurrencyApiCom) *CurrencyRepository {
+type CurrencyRepository struct {
+	storage CurrencyStorage
+	api     ExternalCurrencyApi
+}
+
+func NewCurrencyRepository(storage CurrencyStorage, api ExternalCurrencyApi) *CurrencyRepository {
 	return &CurrencyRepository{storage: storage, api: api}
 }
 
@@ -47,10 +52,14 @@ func (r *CurrencyRepository) GetBySlug(ctx context.Context, slug []string, date 
 	curs, err := r.storage.GetBySlug(ctx, slug, date)
 	if err != nil {
 		log.Printf("CurrencyRepository.GetBySlug, err: %v", err)
+		return nil, fmt.Errorf("get currency due err: %w", err)
+	}
+
+	if len(curs) == 0 {
 
 		res, err := r.api.GetCurrenciesByDate(slug, date)
 		if err != nil {
-			return nil, fmt.Errorf("get currency due err: %v", err)
+			return nil, fmt.Errorf("get currency due err: %w", err)
 		}
 
 		currencies := make([]Currency, 0, len(slug))
@@ -64,7 +73,7 @@ func (r *CurrencyRepository) GetBySlug(ctx context.Context, slug []string, date 
 
 			currency, err := r.storage.Create(ctx, newCurrency)
 			if err != nil {
-				return nil, fmt.Errorf("get currency due err: %v", err)
+				return nil, fmt.Errorf("get currency due err: %w", err)
 			}
 
 			currencies = append(currencies, *currency)
@@ -82,10 +91,13 @@ func (r *CurrencyRepository) GetBySlugAndBase(ctx context.Context, slugs []strin
 	currencies, err := r.storage.GetBySlugAndBase(ctx, slugs, base, date)
 	if err != nil {
 		log.Printf("CurrencyRepository.GetBySlugAndBase, err: %v", err)
+		return nil, fmt.Errorf("get currency due err: %w", err)
+	}
 
+	if len(currencies) == 0 {
 		res, err := r.api.GetCurrenciesFromTo(base, slugs, date)
 		if err != nil {
-			return nil, fmt.Errorf("get currency due err: %v", err)
+			return nil, fmt.Errorf("get currency due err: %w", err)
 		}
 
 		currencies := make([]Currency, 0, len(slugs))
@@ -100,7 +112,7 @@ func (r *CurrencyRepository) GetBySlugAndBase(ctx context.Context, slugs []strin
 
 			currency, err := r.storage.Create(ctx, newCurrency)
 			if err != nil {
-				return nil, fmt.Errorf("get currency due err: %v", err)
+				return nil, fmt.Errorf("get currency due err: %w", err)
 			}
 
 			currencies = append(currencies, *currency)
