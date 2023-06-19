@@ -6,6 +6,9 @@ server dev:
 install:
 	go mod download
 
+run-test:
+	go test -coverprofile=coverage.out ./...
+
 build compile:
 	rm -rf ./build && go build -o ./build/main ./cmd/currency-calc
 

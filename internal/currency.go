@@ -3,33 +3,17 @@ package internal
 import (
 	"context"
 	"fmt"
+	"github.com/regimentor/currency-calc/internal/models"
 	"log"
 	"time"
 
 	"github.com/regimentor/currency-calc/internal/currencyapi.com"
 )
 
-type CurrencyId int64
-
-type Currency struct {
-	ID    CurrencyId `json:"id"`
-	Slug  string     `json:"slug"`
-	Value float64    `json:"value"`
-	Date  time.Time  `json:"date"`
-	Base  string     `json:"base"`
-}
-
-type CreateCurrencyDto struct {
-	Slug  string
-	Value float64
-	Date  time.Time
-	Base  string
-}
-
 type CurrencyStorage interface {
-	GetBySlug(ctx context.Context, slug []string, date time.Time) ([]Currency, error)
-	GetBySlugAndBase(ctx context.Context, slug []string, base string, date time.Time) ([]Currency, error)
-	Create(ctx context.Context, currency *CreateCurrencyDto) (*Currency, error)
+	GetBySlug(ctx context.Context, slug []string, date time.Time) ([]models.Currency, error)
+	GetBySlugAndBase(ctx context.Context, slug []string, base string, date time.Time) ([]models.Currency, error)
+	Create(ctx context.Context, currency *models.CreateCurrencyDto) (*models.Currency, error)
 }
 
 type ExternalCurrencyApi interface {
@@ -46,7 +30,7 @@ func NewCurrencyRepository(storage CurrencyStorage, api ExternalCurrencyApi) *Cu
 	return &CurrencyRepository{storage: storage, api: api}
 }
 
-func (r *CurrencyRepository) GetBySlug(ctx context.Context, slug []string, date time.Time) ([]Currency, error) {
+func (r *CurrencyRepository) GetBySlug(ctx context.Context, slug []string, date time.Time) ([]models.Currency, error) {
 	log.Printf("CurrencyRepository.GetBySlug slug: %s, date: %s", slug, date)
 
 	curs, err := r.storage.GetBySlug(ctx, slug, date)
@@ -62,9 +46,9 @@ func (r *CurrencyRepository) GetBySlug(ctx context.Context, slug []string, date 
 			return nil, fmt.Errorf("get currency due err: %w", err)
 		}
 
-		currencies := make([]Currency, 0, len(slug))
+		currencies := make([]models.Currency, 0, len(slug))
 		for _, slug := range slug {
-			newCurrency := &CreateCurrencyDto{
+			newCurrency := &models.CreateCurrencyDto{
 				Slug:  slug,
 				Value: res.Data[slug].Value,
 				Date:  date,
@@ -85,7 +69,7 @@ func (r *CurrencyRepository) GetBySlug(ctx context.Context, slug []string, date 
 	return curs, nil
 }
 
-func (r *CurrencyRepository) GetBySlugAndBase(ctx context.Context, slugs []string, base string, date time.Time) ([]Currency, error) {
+func (r *CurrencyRepository) GetBySlugAndBase(ctx context.Context, slugs []string, base string, date time.Time) ([]models.Currency, error) {
 	log.Printf("CurrencyRepository.GetBySlugAndBase slug: %s, base: %s, date: %s", slugs, base, date)
 
 	currencies, err := r.storage.GetBySlugAndBase(ctx, slugs, base, date)
@@ -100,10 +84,10 @@ func (r *CurrencyRepository) GetBySlugAndBase(ctx context.Context, slugs []strin
 			return nil, fmt.Errorf("get currency due err: %w", err)
 		}
 
-		currencies := make([]Currency, 0, len(slugs))
+		currencies := make([]models.Currency, 0, len(slugs))
 
 		for _, slug := range slugs {
-			newCurrency := &CreateCurrencyDto{
+			newCurrency := &models.CreateCurrencyDto{
 				Slug:  slug,
 				Value: res.Data[slug].Value,
 				Date:  date,

@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"fmt"
+	"github.com/regimentor/currency-calc/internal/models"
 	"log"
 	"time"
 
@@ -15,14 +16,14 @@ type ApiLogsRepository interface {
 }
 
 type UserRepository interface {
-	Create(ctx context.Context, u internal.CreateUserDto) (*internal.User, error)
-	GetByApiKey(ctx context.Context, apiKey internal.ApiKey) (*internal.User, error)
-	GetById(ctx context.Context, id internal.UserId) (*internal.User, error)
+	Create(ctx context.Context, u models.CreateUserDto) (*models.User, error)
+	GetByApiKey(ctx context.Context, apiKey models.ApiKey) (*models.User, error)
+	GetById(ctx context.Context, id models.UserId) (*models.User, error)
 }
 
 type CurrenciesRepository interface {
-	GetBySlug(ctx context.Context, currencies []string, date time.Time) ([]internal.Currency, error)
-	GetBySlugAndBase(ctx context.Context, slugs []string, base string, date time.Time) ([]internal.Currency, error)
+	GetBySlug(ctx context.Context, currencies []string, date time.Time) ([]models.Currency, error)
+	GetBySlugAndBase(ctx context.Context, slugs []string, base string, date time.Time) ([]models.Currency, error)
 }
 
 type Server struct {
@@ -49,7 +50,7 @@ func AuthenticationMiddleware(userRepository UserRepository) echo.MiddlewareFunc
 			}
 
 			ctx := c.Request().Context()
-			user, err := userRepository.GetByApiKey(ctx, internal.ApiKey(apiKey))
+			user, err := userRepository.GetByApiKey(ctx, models.ApiKey(apiKey))
 			if err != nil {
 				return echo.ErrUnauthorized
 			}

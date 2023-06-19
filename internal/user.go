@@ -7,12 +7,11 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/regimentor/currency-calc/internal/models"
 )
 
-type UserId uint
-type ApiKey string
-
-func GenerateApiKey() ApiKey {
+func GenerateApiKey() models.ApiKey {
 	timestamp := time.Now().Unix()
 
 	byteArray := make([]byte, 8)
@@ -24,24 +23,13 @@ func GenerateApiKey() ApiKey {
 	// Вычисление хэша SHA256
 	hash := sha256.Sum256(byteArray)
 
-	hex.EncodeToString(hash[:])
-
-	return ApiKey(hex.EncodeToString(hash[:]))
-}
-
-type User struct {
-	ID     UserId `json:"id"`
-	ApiKey ApiKey `json:"apiKey"`
-}
-
-type CreateUserDto struct {
-	ApiKey ApiKey
+	return models.ApiKey(hex.EncodeToString(hash[:]))
 }
 
 type UserStorage interface {
-	GetById(ctx context.Context, id UserId) (*User, error)
-	GetByApiKey(ctx context.Context, apiKey ApiKey) (*User, error)
-	Create(ctx context.Context, u CreateUserDto) (*User, error)
+	GetById(ctx context.Context, id models.UserId) (*models.User, error)
+	GetByApiKey(ctx context.Context, apiKey models.ApiKey) (*models.User, error)
+	Create(ctx context.Context, u models.CreateUserDto) (*models.User, error)
 }
 
 type UserRepository struct {
@@ -52,7 +40,7 @@ func NewUserRepository(storage UserStorage) *UserRepository {
 	return &UserRepository{storage: storage}
 }
 
-func (r *UserRepository) Create(ctx context.Context, u CreateUserDto) (*User, error) {
+func (r *UserRepository) Create(ctx context.Context, u models.CreateUserDto) (*models.User, error) {
 	log.Printf("UserRepository:create user %s", u.ApiKey)
 	newUser, err := r.storage.Create(ctx, u)
 	if err != nil {
@@ -62,7 +50,7 @@ func (r *UserRepository) Create(ctx context.Context, u CreateUserDto) (*User, er
 	return newUser, nil
 }
 
-func (r *UserRepository) GetById(ctx context.Context, id UserId) (*User, error) {
+func (r *UserRepository) GetById(ctx context.Context, id models.UserId) (*models.User, error) {
 	log.Printf("UserRepository:GetById %d", id)
 	user, err := r.storage.GetById(ctx, id)
 	if err != nil {
@@ -72,7 +60,7 @@ func (r *UserRepository) GetById(ctx context.Context, id UserId) (*User, error) 
 	return user, nil
 }
 
-func (r *UserRepository) GetByApiKey(ctx context.Context, apiKey ApiKey) (*User, error) {
+func (r *UserRepository) GetByApiKey(ctx context.Context, apiKey models.ApiKey) (*models.User, error) {
 	log.Printf("UserRepository:GetByApiKey %s", apiKey)
 	user, err := r.storage.GetByApiKey(ctx, apiKey)
 	if err != nil {

@@ -3,6 +3,7 @@ package http
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/regimentor/currency-calc/internal"
+	"github.com/regimentor/currency-calc/internal/models"
 	"log"
 	"net/http"
 	"strings"
@@ -39,7 +40,7 @@ func (h *CurrencyHandler) GetCurrencies(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	if err := h.apiLogsRepository.Create(ctx, &internal.CreateApiLogsDto{
-		UserId:      c.Get("userId").(internal.UserId),
+		UserId:      c.Get("userId").(models.UserId),
 		RequestType: internal.GetAll,
 		RequestTime: time.Now(),
 	}); err != nil {
@@ -73,7 +74,7 @@ func (h *CurrencyHandler) GetCurrenciesFromTo(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	if err := h.apiLogsRepository.Create(ctx, &internal.CreateApiLogsDto{
-		UserId:      c.Get("userId").(internal.UserId),
+		UserId:      c.Get("userId").(models.UserId),
 		RequestType: internal.GetByBase,
 		RequestTime: time.Now(),
 	}); err != nil {

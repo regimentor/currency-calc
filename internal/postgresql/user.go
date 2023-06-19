@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/regimentor/currency-calc/internal"
+	"github.com/regimentor/currency-calc/internal/models"
 	"log"
 )
 
@@ -16,14 +16,14 @@ func NewUserStorage(connection *pgxpool.Pool) *UserStorage {
 	return &UserStorage{connection: connection}
 }
 
-func (s *UserStorage) GetById(ctx context.Context, id internal.UserId) (*internal.User, error) {
+func (s *UserStorage) GetById(ctx context.Context, id models.UserId) (*models.User, error) {
 	log.Printf("UserStorage.GetById: %v", id)
 
 	query := `
 		select id, api_key from users where id = $1;
 	`
 
-	user := &internal.User{}
+	user := &models.User{}
 
 	row := s.connection.QueryRow(ctx, query, id)
 	if err := row.Scan(&user.ID, &user.ApiKey); err != nil {
@@ -35,14 +35,14 @@ func (s *UserStorage) GetById(ctx context.Context, id internal.UserId) (*interna
 	return user, nil
 }
 
-func (s *UserStorage) GetByApiKey(ctx context.Context, apiKey internal.ApiKey) (*internal.User, error) {
+func (s *UserStorage) GetByApiKey(ctx context.Context, apiKey models.ApiKey) (*models.User, error) {
 	log.Printf("UserStorage.GetByApiKey: %v", apiKey)
 
 	query := `
 		select id, api_key from users where api_key = $1;
 	`
 
-	user := &internal.User{}
+	user := &models.User{}
 
 	row := s.connection.QueryRow(ctx, query, apiKey)
 	if err := row.Scan(&user.ID, &user.ApiKey); err != nil {
@@ -54,13 +54,13 @@ func (s *UserStorage) GetByApiKey(ctx context.Context, apiKey internal.ApiKey) (
 	return user, nil
 }
 
-func (s *UserStorage) Create(ctx context.Context, u internal.CreateUserDto) (*internal.User, error) {
+func (s *UserStorage) Create(ctx context.Context, u models.CreateUserDto) (*models.User, error) {
 	log.Printf("UserStorage.Create: %v", u)
 
 	createUserQuery := `
 		insert into users (api_key) values ($1) returning id, api_key;
 	`
-	newUser := &internal.User{}
+	newUser := &models.User{}
 
 	row := s.connection.QueryRow(ctx, createUserQuery, u.ApiKey)
 

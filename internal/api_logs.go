@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"github.com/regimentor/currency-calc/internal/models"
 	"time"
 )
 
@@ -11,16 +12,16 @@ const (
 )
 
 type ApiLogs struct {
-	ID          UserId `json:"id"`
-	RequestType int    `json:"request_type"`
-	RequestTime string `json:"request_date"`
-	UserId      int64  `json:"user_id"`
+	ID          models.UserId `json:"id"`
+	RequestType int           `json:"request_type"`
+	RequestTime string        `json:"request_date"`
+	UserId      int64         `json:"user_id"`
 }
 
 type CreateApiLogsDto struct {
-	RequestType int       `json:"request_type"`
-	RequestTime time.Time `json:"request_time"`
-	UserId      UserId    `json:"user_id"`
+	RequestType int           `json:"request_type"`
+	RequestTime time.Time     `json:"request_time"`
+	UserId      models.UserId `json:"user_id"`
 }
 
 type ApiLogsStorage interface {
